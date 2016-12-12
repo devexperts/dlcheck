@@ -1,0 +1,8 @@
+Premain-Class: com.devexperts.dlcheck.DlCheckAgentRunner
+Can-Redefine-Classes: true
+Boot-Class-Path: ${agent.artifact.name}.jar
+
+Name: com/devexperts/dlcheck/
+Implementation-Title: ${agent.artifact.name}
+Implementation-Version: ${project.version}
+Implementation-Vendor: Devexperts LLC

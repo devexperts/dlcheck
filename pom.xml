@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Aprof - Java Memory Allocation Profiler
+  ~ Copyright (C) 2002-2014  Devexperts LLC
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses />.
+  --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.devexperts.dlcheck</groupId>
+	<artifactId>dlcheck</artifactId>
+	<version>0.2-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<name>dl-check</name>
+	<description>Deadlock detection utilite</description>
+
+	<inceptionYear>2015</inceptionYear>
+	<organization>
+		<name>Devexperts, LLC</name>
+		<url>http://www.devexperts.com/</url>
+	</organization>
+
+	<properties>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<jagent.version>1.0</jagent.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<license.licenseName>gpl_v3</license.licenseName>
+		<lastCopyrightYear>2015</lastCopyrightYear>
+		<agent.artifact.name>dlcheck</agent.artifact.name>
+		<maven.deploy.skip>true</maven.deploy.skip>
+	</properties>
+
+	<modules>
+		<module>transformer</module>
+		<module>core</module>
+		<module>agent</module>
+		<module>test</module>
+		<module>api</module>
+		<module>benchmarks</module>
+	</modules>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<!-- Define versions of all plugins -->
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>2.6</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>2.18</version>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>license-maven-plugin</artifactId>
+					<version>1.8</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>2.5.2</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>2.10.3</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-shade-plugin</artifactId>
+					<version>2.4.3</version>
+				</plugin>
+				<plugin>
+					<groupId>com.devexperts.bintray</groupId>
+					<artifactId>bintray-maven-plugin</artifactId>
+					<version>1.3</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+
+		<!-- Configure plugins -->
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifestEntries>
+							<Copyright>Copyright (C) ${project.inceptionYear} - ${lastCopyrightYear} Devexperts, LLC
+							</Copyright>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>check-headers</id>
+						<goals>
+							<goal>update-file-header</goal>
+						</goals>
+						<phase>process-sources</phase>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<configuration>
+					<releaseProfiles>release</releaseProfiles>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<profiles>
+		<profile>
+			<id>release</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.devexperts.bintray</groupId>
+						<artifactId>bintray-maven-plugin</artifactId>
+						<configuration>
+							<id>bintray-devexperts</id>
+							<url>https://api.bintray.com/maven/devexperts/Maven/dl-check</url>
+						</configuration>
+						<executions>
+							<execution>
+								<id>bintray-deploy</id>
+								<goals>
+									<goal>deploy</goal>
+									<goal>publish</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>license-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>check-headers</id>
+								<goals>
+									<goal>check-file-header</goal>
+								</goals>
+								<phase>package</phase>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-source-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>attach-sources</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>attach-javadoc</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
+	<repositories>
+		<!-- For JAgent -->
+		<repository>
+			<id>bintray-devexperts-Maven</id>
+			<name>bintray</name>
+			<url>http://dl.bintray.com/devexperts/Maven</url>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<id>bintray-devexperts-Maven</id>
+			<name>bintray-plugins</name>
+			<url>http://dl.bintray.com/devexperts/Maven</url>
+		</pluginRepository>
+	</pluginRepositories>
+
+	<scm>
+		<connection>scm:git:git@bitbucket.org:dxlab-dl-check/dl-check.git</connection>
+		<developerConnection>scm:git:git@bitbucket.org:dxlab-dl-check/dl-check.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
+
+	<distributionManagement>
+		<repository>
+			<id>jrc</id>
+			<url>https://maven.in.devexperts.com/content/repositories/jrc</url>
+		</repository>
+		<snapshotRepository>
+			<id>jrc-snapshot</id>
+			<url>https://maven.in.devexperts.com/content/repositories/jrc-snapshot</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+</project>

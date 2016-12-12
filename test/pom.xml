@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>dlcheck</artifactId>
+        <groupId>com.devexperts.dlcheck</groupId>
+        <version>0.2-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>test</artifactId>
+
+    <build>
+        <plugins>
+            <!-- maven-dependency-plugin is used to copy "dlcheck" agent into target directory -->
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-sample-agent</id>
+                        <phase>process-test-classes</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.devexperts.dlcheck</groupId>
+                                    <artifactId>agent</artifactId>
+                                    <version>${project.version}</version>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                    <destFileName>${agent.artifact.name}.jar</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Configure maven-surefire-plugin to use "dlcheck" agent -->
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>-javaagent:${project.build.directory}/${agent.artifact.name}.jar
+                        -Ddlcheck.log.level=DEBUG
+                        -Ddlcheck.dump.dir=target/dlcheck_dump
+                    </argLine>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.devexperts.dlcheck</groupId>
+            <artifactId>agent</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.devexperts.dlcheck</groupId>
+            <artifactId>api</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

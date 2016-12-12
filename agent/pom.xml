@@ -1,0 +1,96 @@
+<!--
+  ~ Aprof - Java Memory Allocation Profiler
+  ~ Copyright (C) 2002-2014  Devexperts LLC
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses />.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.devexperts.dlcheck</groupId>
+		<artifactId>dlcheck</artifactId>
+		<version>0.2-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>agent</artifactId>
+
+	<properties>
+		<maven.deploy.skip>false</maven.deploy.skip>
+	</properties>
+
+	<build>
+		<!-- DO NOT RENAME because of "Boot-Class-Path" section in MANIFEST.MF -->
+		<finalName>${agent.artifact.name}</finalName>
+		<plugins>
+			<!-- Firstly, maven-dependency-plugin unpacks "core" module
+                 and copies all other dependencies to it's classpath.
+                 Classes from these dependencies will be loaded
+                 via InnerJarClassLoader from "core" module. -->
+			<plugin>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<includeArtifactIds>asm-all,owner,owner-java8,transformer,jagent-impl</includeArtifactIds>
+							<outputDirectory>${project.build.outputDirectory}</outputDirectory>
+							<stripVersion>true</stripVersion>
+						</configuration>
+					</execution>
+					<execution>
+						<id>unpack-dependencies</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>unpack-dependencies</goal>
+						</goals>
+						<configuration>
+							<includeArtifactIds>core</includeArtifactIds>
+							<outputDirectory>${project.build.outputDirectory}</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- Then, maven-jar-plugin builds jar with dependencies and
+                 specified MANIFEST.MF file (contains in "core" module). -->
+			<plugin>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<addMavenDescriptor>false</addMavenDescriptor>
+					</archive>
+					<useDefaultManifestFile>true</useDefaultManifestFile>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.devexperts.dlcheck</groupId>
+			<artifactId>core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.devexperts.dlcheck</groupId>
+			<artifactId>transformer</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	</dependencies>
+</project>

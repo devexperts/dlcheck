@@ -1,0 +1,93 @@
+<!--
+  ~ Aprof - Java Memory Allocation Profiler
+  ~ Copyright (C) 2002-2014  Devexperts LLC
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses />.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.devexperts.dlcheck</groupId>
+        <artifactId>dlcheck</artifactId>
+        <version>0.2-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>core</artifactId>
+
+    <build>
+        <!-- Processes resources directory to replace Maven's variables to theirs values -->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+        <!-- Builds jar with specified MANIFEST.MF file-->
+        <plugins>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <addMavenDescriptor>false</addMavenDescriptor>
+                    </archive>
+                    <useDefaultManifestFile>true</useDefaultManifestFile>
+                </configuration>
+            </plugin>
+            <!-- maven-shade-plugin is used for relocating "jagent-api" classes.
+                 It's necessary when you use "jagent-api" in several agents
+                 to get rid of conflict with different "jagent-api" versions. -->
+            <plugin>
+                <artifactId>maven-shade-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <artifactSet>
+                                <includes>
+                                    <include>com.devexperts.jagent:jagent-api</include>
+                                    <include>com.devexperts.dlcheck:api</include>
+                                </includes>
+                            </artifactSet>
+                            <relocations>
+                                <relocation>
+                                    <pattern>com.devexperts.jagent</pattern>
+                                    <shadedPattern>com.devexperts.dlcheck.shaded.com.devexperts.jagent
+                                    </shadedPattern>
+                                </relocation>
+                            </relocations>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.devexperts.jagent</groupId>
+            <artifactId>jagent-api</artifactId>
+            <version>${jagent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.devexperts.dlcheck</groupId>
+            <artifactId>api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+</project>
