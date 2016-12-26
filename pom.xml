@@ -20,7 +20,7 @@
 
 	<groupId>com.devexperts.dlcheck</groupId>
 	<artifactId>dlcheck</artifactId>
-	<version>0.2-SNAPSHOT</version>
+	<version>0.2.017</version>
 	<packaging>pom</packaging>
 
 	<name>dl-check</name>
@@ -130,19 +130,18 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-release-plugin</artifactId>
-				<configuration>
-					<releaseProfiles>release</releaseProfiles>
-				</configuration>
-			</plugin>
 		</plugins>
 	</build>
 
 	<profiles>
 		<profile>
 			<id>release</id>
+			<activation>
+				<property>
+					<name>performRelease</name>
+					<value>true</value>
+				</property>
+			</activation>
 			<build>
 				<plugins>
 					<plugin>
@@ -199,6 +198,20 @@
 							</execution>
 						</executions>
 					</plugin>
+					<!-- Configuration for release -->
+					<plugin>
+						<groupId>com.devexperts.jgitflow</groupId>
+						<artifactId>jgitflow-maven-plugin</artifactId>
+						<version>1.0-m5.1-devexperts</version>
+						<configuration>
+							<autoVersionSubmodules>true</autoVersionSubmodules>
+							<flowInitContext>
+								<versionTagPrefix>dlcheck-</versionTagPrefix>
+							</flowInitContext>
+							<squash>true</squash>
+							<scmCommentPrefix>[release] </scmCommentPrefix>
+						</configuration>
+					</plugin>
 				</plugins>
 			</build>
 		</profile>
@@ -207,7 +220,7 @@
 	<repositories>
 		<!-- For JAgent -->
 		<repository>
-			<id>bintray-devexperts-Maven</id>
+			<id>bintray-devexperts</id>
 			<name>bintray</name>
 			<url>http://dl.bintray.com/devexperts/Maven</url>
 		</repository>
@@ -218,7 +231,7 @@
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
-			<id>bintray-devexperts-Maven</id>
+			<id>bintray-devexperts</id>
 			<name>bintray-plugins</name>
 			<url>http://dl.bintray.com/devexperts/Maven</url>
 		</pluginRepository>
