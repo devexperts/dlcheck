@@ -91,7 +91,7 @@ public class ClassTransformer extends ClassVisitor {
     @Override
     public MethodVisitor visitMethod(int access, String methodName, String desc, String signature, String[] exceptions) {
         MethodVisitor mv = super.visitMethod(access, methodName, desc, signature, exceptions);
-//        mv = new JSRInlinerAdapter(mv, access, methodName, desc, signature, exceptions);
+        mv = new JSRInlinerAdapter(mv, access, methodName, desc, signature, exceptions);
         mv = new MethodTransformer(new GeneratorAdapter(mv, access, methodName, desc), configuration,
                 className, methodName, fileName, access, classVersion);
         return mv;

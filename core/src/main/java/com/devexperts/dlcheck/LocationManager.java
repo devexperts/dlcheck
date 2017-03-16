@@ -82,8 +82,8 @@ public class LocationManager {
         }
     }
 
-    public synchronized int getLocationId(String className, String methodName, String fileName, int line) {
-        StackTraceElement location = new StackTraceElement(className, methodName, fileName, line);
+    public synchronized int getLocationId(String internalClassName, String methodName, String fileName, int line) {
+        StackTraceElement location = new StackTraceElement(internalClassName.replaceAll("/", "."), methodName, fileName, line);
         Integer id = locationIds.get(location);
         if (id != null)
             return id;

@@ -34,7 +34,7 @@ public class DlCheckOperations {
     private static final long STATS_PERIOD =
             Long.parseLong(System.getProperty("dlcheck.stats.period", "60000"));
     // Statistics counter
-    private static final Stats stats = new Stats();
+    private static final Stats stats = Stats.INSTANCE; // TODO do not use singleton pattern
     // Stores lock graph based as standard wait-for graph, but without edges removing
     private static final LockGraph lockGraph = new LockGraph(stats);
     // Lock stack for current thread

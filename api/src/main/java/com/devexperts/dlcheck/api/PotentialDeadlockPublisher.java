@@ -44,6 +44,7 @@ class PotentialDeadlockPublisher {
                 } else {
                     FileUtils.createMissingDirectories(filePath);
                     outputStream = Files.newOutputStream(filePath);
+                    outputStream.flush();
                 }
                 out = new PrintStream(outputStream);
             }

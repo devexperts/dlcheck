@@ -89,32 +89,25 @@ class Transformer extends CachingClassFileTransformer {
     @Override
     public byte[] transformImpl(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain,
                                 byte[] classfileBuffer) throws IllegalClassFormatException {
+        long startTime = System.currentTimeMillis();
         try {
             ClassReader cr = new ClassReader(classfileBuffer);
             DlCheckClassInfoVisitor ciVisitor = new DlCheckClassInfoVisitor();
             cr.accept(ciVisitor, 0);
-            ciCache.getOrInitClassInfoMap(loader).put(className, ciVisitor.getClassInfo());
-            ClassWriter cw = new FrameClassWriter(loader, ciCache);
-            String filename = extractSourceClassLocation(className); // TODO extract from byte-code
+            ClassInfo cInfo = ciVisitor.buildClassInfo();
+            ciCache.getOrInitClassInfoMap(loader).put(className, cInfo);
+            ClassWriter cw = new FrameClassWriter(loader, ciCache, cInfo.getVersion());
             ClassVisitor classTransformer = new ClassTransformer(
                     ciVisitor.implementLockNodeHolder() ? new SerialVersionUIDAdder(cw) : cw,
-                    filename, configuration, false
+                    cInfo.getSourceFile(), configuration, false
             );
             cr.accept(classTransformer, ClassReader.EXPAND_FRAMES);
             return cw.toByteArray();
         } catch (Exception e) {
             log.warn("Unable to transform class ", className, e);
             return null;
+        } finally {
+            Stats.INSTANCE.increase_transformation_time(System.currentTimeMillis() - startTime);
         }
-    }
-
-    private String extractSourceClassLocation(String className) {
-        int i = className.lastIndexOf('/');
-        if (i > 0)
-            className = className.substring(i + 1);
-        i = className.indexOf('$');
-        if (i > 0)
-            className = className.substring(0, i);
-        return className + ".java";
     }
 }

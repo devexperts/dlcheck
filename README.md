@@ -51,8 +51,6 @@ Use the following code in your ```pom.xml``` to use **Dl-Check** for tests.
    <groupId>org.apache.maven.plugins</groupId>
    <artifactId>maven-surefire-plugin</artifactId>
    <configuration>
-      <redirectTestOutputToFile>true</redirectTestOutputToFile>
-      <forkedProcessTimeoutInSeconds>300</forkedProcessTimeoutInSeconds>
       <argLine>-javaagent:${project.build.directory}/dlcheck.jar
          -Ddlcheck.cache.dir=${dlcheck.workdir}/cache
          <!-- Optional, fails at the point of potential deadlock is detected -->

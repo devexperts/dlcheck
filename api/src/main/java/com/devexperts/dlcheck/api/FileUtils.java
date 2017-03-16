@@ -30,6 +30,8 @@ public class FileUtils {
 
     public static boolean createMissingDirectories(Path file) throws IOException {
         Path dir = file.getParent();
+        if (dir == null)
+            return true;
         if (Files.exists(dir))
             return false;
         Files.createDirectories(dir);

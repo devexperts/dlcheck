@@ -5,7 +5,7 @@
     <parent>
         <artifactId>dlcheck</artifactId>
         <groupId>com.devexperts.dlcheck</groupId>
-        <version>0.2.017</version>
+        <version>0.3</version>
     </parent>
 
     <artifactId>test</artifactId>

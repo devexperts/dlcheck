@@ -30,15 +30,24 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static java.time.temporal.ChronoField.HOUR_OF_DAY;
+import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
+import static java.time.temporal.ChronoField.SECOND_OF_MINUTE;
+
 public class Stats {
+    public static final Stats INSTANCE = new Stats();
+
     public static final String GRAPH_DUMP_EXTENSION = ".dot";
     private static final String STATS_EXTENSION = ".stats";
-
     private static final String STATS_DIR = System.getProperty("dlcheck.stats.dir");
     public static final boolean STATS_ENABLED = STATS_DIR != null;
+
+    private final AtomicLong transformation_time = new AtomicLong();
 
     private final AtomicLong monitor_enters = new AtomicLong();
     private final AtomicLong monitor_enters_reentrant = new AtomicLong();
@@ -72,6 +81,20 @@ public class Stats {
 
     private final AtomicIntegerArray lockStackSize = new AtomicIntegerArray(200);
 //    private final AtomicIntegerArray maintainTopOrder = new AtomicIntegerArray(200);
+
+    private Stats() {}
+
+
+
+
+    public void increase_transformation_time(long timeNanos) {
+        if (STATS_ENABLED) {
+            transformation_time.addAndGet(timeNanos);
+        }
+    }
+
+
+
 
     public void inc_monitor_enters() {
         if (STATS_ENABLED) {
@@ -247,6 +270,9 @@ public class Stats {
 
     public void dump() {
         try (PrintWriter pw = new PrintWriter(createStatsFilePath(STATS_EXTENSION).toFile())) {
+            printKeyValue(pw, "transformation_time_total", transformation_time.get() + "ms");
+            printKeyValue(pw, "monitor_enters_time_total", monitor_enters_time.get() / 1_000_000 + "ms");
+
             printKeyValue(pw, "monitor_enters", monitor_enters);
             printKeyValue(pw, "monitor_enters_reentrant", monitor_enters_reentrant);
             printKeyValue(pw, "monitor_enter_time", (monitor_enters_time.get() / monitor_enters.get()) + "ns");
@@ -312,8 +338,18 @@ public class Stats {
         }
     }
 
+    private static final DateTimeFormatter FILE_SUFFIX_FORMATTER = new DateTimeFormatterBuilder()
+        .append(DateTimeFormatter.ISO_LOCAL_DATE)
+        .appendLiteral('T')
+        .appendValue(HOUR_OF_DAY, 2)
+        .appendLiteral('-')
+        .appendValue(MINUTE_OF_HOUR, 2)
+        .appendLiteral('-')
+        .appendValue(SECOND_OF_MINUTE, 2)
+        .toFormatter();
+
     static Path createStatsFilePath(String extension) throws IOException {
-        Path p = Paths.get(STATS_DIR, LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME) + extension);
+        Path p = Paths.get(STATS_DIR, LocalDateTime.now().format(FILE_SUFFIX_FORMATTER) + extension);
         FileUtils.createMissingDirectories(p);
         return p;
     }

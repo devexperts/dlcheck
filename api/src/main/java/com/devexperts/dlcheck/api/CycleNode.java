@@ -39,7 +39,7 @@ public class CycleNode {
     }
 
     public void print(PrintStream out) {
-        out.println("Lock " + desc + " acquires at:");
+        out.println("Lock " + desc + " was acquired at:");
         PrintUtils.printStacktrace(out, acquiringLocations);
     }
 

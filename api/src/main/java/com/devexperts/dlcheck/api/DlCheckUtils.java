@@ -22,17 +22,15 @@ package com.devexperts.dlcheck.api;
  * #L%
  */
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class DlCheckUtils {
-    private static final Set<PotentialDeadlockListener> POTENTIAL_DEADLOCK_LISTENERS = new HashSet<>();
+    private static final Set<PotentialDeadlockListener> POTENTIAL_DEADLOCK_LISTENERS = new LinkedHashSet<>();
+
+    private static final boolean FAIL_ON_POTENTIAL_DEADLOCK = Boolean.parseBoolean(System.getProperty("dlcheck.fail", "false"));
 
     static {
-        if (Boolean.parseBoolean(System.getProperty("dlcheck.fail", "false")))
-            addPotentialDeadlockListener(pd -> {
-                throw new AssertionError(pd);
-            });
         addPotentialDeadlockListener(PotentialDeadlockPublisher::publishPotentialDeadlock);
     }
 
@@ -47,6 +45,7 @@ public class DlCheckUtils {
     public static synchronized void notifyAboutPotentialDeadlock(PotentialDeadlock potentialDeadlock) {
         for (PotentialDeadlockListener listener : POTENTIAL_DEADLOCK_LISTENERS)
             listener.handle(potentialDeadlock);
+        if (FAIL_ON_POTENTIAL_DEADLOCK)
+            throw new AssertionError("Potential deadlock have detected, see Dl-Check logs for details");
     }
-
 }
