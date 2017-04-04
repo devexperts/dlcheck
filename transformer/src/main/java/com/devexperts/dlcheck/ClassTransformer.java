@@ -27,22 +27,32 @@ import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.JSRInlinerAdapter;
+import org.objectweb.asm.commons.LocalVariablesSorter;
+import org.objectweb.asm.commons.TryCatchBlockSorter;
+
+import java.util.List;
 
 import static com.devexperts.dlcheck.TrasformationUtils.*;
 import static org.objectweb.asm.Opcodes.*;
 
 public class ClassTransformer extends ClassVisitor {
     private final String fileName;
-    private final Configuration configuration;
+    private final List<MethodInstructionPredicate> lockPredicates;
+    private final List<MethodInstructionPredicate> tryLockPredicates;
+    private final List<MethodInstructionPredicate> unlockPredicates;
     private final boolean implementLockNodeHolder;
     private String className;
     private int classVersion;
 
-    ClassTransformer(ClassVisitor cv, String fileName, Configuration configuration,
-                     boolean implementLockNodeHolder) {
+    ClassTransformer(ClassVisitor cv, String fileName, List<MethodInstructionPredicate> lockPredicates,
+        List<MethodInstructionPredicate> tryLockPredicates, List<MethodInstructionPredicate> unlockPredicates,
+        boolean implementLockNodeHolder)
+    {
         super(ASM_API, cv);
         this.fileName = fileName;
-        this.configuration = configuration;
+        this.lockPredicates = lockPredicates;
+        this.tryLockPredicates = tryLockPredicates;
+        this.unlockPredicates = unlockPredicates;
         this.implementLockNodeHolder = implementLockNodeHolder;
     }
 
@@ -92,8 +102,14 @@ public class ClassTransformer extends ClassVisitor {
     public MethodVisitor visitMethod(int access, String methodName, String desc, String signature, String[] exceptions) {
         MethodVisitor mv = super.visitMethod(access, methodName, desc, signature, exceptions);
         mv = new JSRInlinerAdapter(mv, access, methodName, desc, signature, exceptions);
-        mv = new MethodTransformer(new GeneratorAdapter(mv, access, methodName, desc), configuration,
-                className, methodName, fileName, access, classVersion);
+        mv = new SynchronizedBlockTransformer(new GeneratorAdapter(mv, access, methodName, desc),
+            className, methodName, fileName);
+        mv = new SynchronizedMethodTransformer(new GeneratorAdapter(mv, access, methodName, desc),
+            className, methodName, fileName, access, classVersion);
+        mv = new LockTransformer(new GeneratorAdapter(mv, access, methodName, desc),
+            lockPredicates, tryLockPredicates, unlockPredicates, className, methodName, fileName);
+        // mv = new LocalVariablesSorter(access, desc, mv);
+        mv = new TryCatchBlockSorter(mv, access, methodName, desc, signature, exceptions);
         return mv;
     }
 }

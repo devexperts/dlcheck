@@ -50,7 +50,6 @@ public class DlCheckOperations {
             new Timer().schedule(new TimerTask() {
                 @Override
                 public void run() {
-
                     stats.dump();
                     lockGraph.dump();
                 }
@@ -98,15 +97,14 @@ public class DlCheckOperations {
     }
 
     @SuppressWarnings("UnusedDeclaration")
-    public static void beforeMonitorExit(Object owner) {
+    public static void afterMonitorExit(Object owner) {
         try {
             LockNodeStack lockStack = lockStacks.get();
             LockNode node = getLockNode(owner);
-            if (lockStack.remove(node))
+            boolean removedFromTop = lockStack.remove(node);
+            if (Stats.STATS_ENABLED && removedFromTop)
                 stats.inc_monitor_exits_from_top();
         } catch (Throwable t) {
-            if (t instanceof AssertionError)
-                throw t;
             t.printStackTrace();
         }
     }

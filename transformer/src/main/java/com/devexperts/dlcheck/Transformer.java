@@ -27,18 +27,27 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.commons.SerialVersionUIDAdder;
+import org.objectweb.asm.util.CheckClassAdapter;
+import org.objectweb.asm.util.TraceClassVisitor;
 
+import java.io.PrintWriter;
 import java.lang.instrument.IllegalClassFormatException;
+import java.nio.file.Files;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 class Transformer extends CachingClassFileTransformer {
     private final Configuration configuration;
     private final ClassInfoCache ciCache;
     private final List<Pattern> includes;
     private final List<Pattern> excludes;
+    private final List<MethodInstructionPredicate> lockPredicates;
+    private final List<MethodInstructionPredicate> tryLockPredicates;
+    private final List<MethodInstructionPredicate> unlockPredicates;
 
     Transformer(Configuration configuration, Log log, String agentVersion) {
         super(log, agentVersion);
@@ -50,10 +59,22 @@ class Transformer extends CachingClassFileTransformer {
         excludes = new ArrayList<>(configuration.exclude().length);
         for (String s : configuration.exclude())
             excludes.add(GlobUtil.compile(s.replaceAll("\\.", "/")));
+        lockPredicates = Arrays.stream(configuration.lockPatterns())
+            .map(MethodInstructionPredicate::create)
+            .collect(Collectors.toList());
+        tryLockPredicates = Arrays.stream(configuration.tryLockPatterns())
+            .map(MethodInstructionPredicate::create)
+            .collect(Collectors.toList());
+        unlockPredicates = Arrays.stream(configuration.unlockPatterns())
+            .map(MethodInstructionPredicate::create)
+            .collect(Collectors.toList());
     }
 
     @Override
     protected boolean processClass(String className, ClassLoader classLoader) {
+        // Do not analyze dependencies
+        if (classLoader == Transformer.class.getClassLoader())
+            return false;
         if ((className.startsWith("com/devexperts/dlcheck")
                 && !className.startsWith("com/devexperts/dlcheck/tests/")
                 && !className.startsWith("com/devexperts/dlcheck/benchmarks/")) ||
@@ -63,7 +84,7 @@ class Transformer extends CachingClassFileTransformer {
                 className.startsWith("javax/") ||
                 className.startsWith("com/sun/") ||
                 className.startsWith("org/openjdk/") ||
-                // Do not analyze dependencies
+                className.startsWith("jdk/") ||
                 className.startsWith("org/objectweb/asm/") ||
                 className.startsWith("org/aeonbits/owner/") ||
                 className.startsWith("com/devexperts/jagent/") ||
@@ -97,13 +118,14 @@ class Transformer extends CachingClassFileTransformer {
             ClassInfo cInfo = ciVisitor.buildClassInfo();
             ciCache.getOrInitClassInfoMap(loader).put(className, cInfo);
             ClassWriter cw = new FrameClassWriter(loader, ciCache, cInfo.getVersion());
-            ClassVisitor classTransformer = new ClassTransformer(
-                    ciVisitor.implementLockNodeHolder() ? new SerialVersionUIDAdder(cw) : cw,
-                    cInfo.getSourceFile(), configuration, false
+            ClassVisitor cv = new ClassTransformer(
+                    /*ciVisitor.implementLockNodeHolder() ? new SerialVersionUIDAdder(cw) :*/ cw,
+                    cInfo.getSourceFile(), lockPredicates, tryLockPredicates, unlockPredicates, false
             );
-            cr.accept(classTransformer, ClassReader.EXPAND_FRAMES);
+            cv  = new CheckClassAdapter(cv); // TODO debug
+            cr.accept(cv, ClassReader.EXPAND_FRAMES);
             return cw.toByteArray();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             log.warn("Unable to transform class ", className, e);
             return null;
         } finally {

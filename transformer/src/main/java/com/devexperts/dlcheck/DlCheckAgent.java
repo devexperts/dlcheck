@@ -22,6 +22,7 @@ package com.devexperts.dlcheck;
  * #L%
  */
 
+import com.devexperts.dlcheck.api.PotentialDeadlockPublisher;
 import com.devexperts.jagent.CachingClassFileTransformer;
 import com.devexperts.jagent.JAgent;
 import com.devexperts.jagent.JAgentUtil;
@@ -56,6 +57,7 @@ public class DlCheckAgent extends JAgent {
         transformer.setDumpDir(cfg.dumpDir());
         agent.addTransformer(transformer);
         LocationManager.getInstance().init(cfg.cacheDir(), agentVersion);
+        PotentialDeadlockPublisher.init();
         return agent;
     }
 }

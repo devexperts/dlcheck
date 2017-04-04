@@ -29,11 +29,11 @@ import java.nio.file.Paths;
 
 import static java.nio.file.StandardOpenOption.APPEND;
 
-class PotentialDeadlockPublisher {
+public class PotentialDeadlockPublisher {
     private static final String OUTPUT_PROPERTY = "dlcheck.output";
     private static volatile PrintStream out = System.out; // print to console by default
 
-    static {
+    public static void init() {
         try {
             String file = System.getProperty(OUTPUT_PROPERTY);
             if (file != null) {

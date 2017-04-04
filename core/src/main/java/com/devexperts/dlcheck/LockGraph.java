@@ -42,6 +42,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -382,23 +383,23 @@ class LockGraph {
     }
 
     private void publishPotentialDeadlockIfNeeded(List<LockNode> cyclePath, LockNodeStack lockStack) {
-//        for (List<LockNode> c : FOUND_CYCLES) {
-//            if (cyclePath.size() != c.size())
-//                continue;
-//            boolean flag = true;
-//            for (Iterator<LockNode> newIt = cyclePath.iterator(), oldIt = c.iterator(); newIt.hasNext() && oldIt.hasNext(); ) {
-//                LockNode newNode = newIt.next();
-//                LockNode oldNode = oldIt.next();
-//                if (!newNode.acquireLocationIds.containsAll(oldNode.acquireLocationIds)) {
-//                    flag = false;
-//                    break;
-//                }
-//            }
-//            if (flag)
-//                return;
-//        }
-//        FOUND_CYCLES.add(cyclePath);
-//        stats.inc_cycles_unique();
+        for (List<LockNode> c : FOUND_CYCLES) {
+            if (cyclePath.size() != c.size())
+                continue;
+            boolean flag = true;
+            for (Iterator<LockNode> newIt = cyclePath.iterator(), oldIt = c.iterator(); newIt.hasNext() && oldIt.hasNext(); ) {
+                LockNode newNode = newIt.next();
+                LockNode oldNode = oldIt.next();
+                if (!newNode.acquireLocationIds.containsAll(oldNode.acquireLocationIds)) {
+                    flag = false;
+                    break;
+                }
+            }
+            if (flag)
+                return;
+        }
+        FOUND_CYCLES.add(cyclePath);
+        stats.inc_cycles_unique();
         Cycle cycle = new Cycle(cyclePath.stream().map(
                 lockNode -> new CycleNode(lockNode.desc, getLocations(lockNode.acquireLocationIds))
         ).collect(Collectors.toList()));
