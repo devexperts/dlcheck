@@ -446,7 +446,7 @@ class LockGraph {
                 }
             }
         }
-        return null;
+        return new ArrayList<>();
     }
 
     void dump() {
