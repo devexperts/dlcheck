@@ -113,7 +113,7 @@ Lock Object@2acf57e3 was acquired at:
 
 
 # Contacts
-If you need help, you have a question, or you need further details on how to use **lin-check**, you can refer to the following resources:
+If you need help, you have a question, or you need further details on how to use **Dl-Check**, you can refer to the following resources:
 
 * [dxLab](https://code.devexperts.com/) research group at Devexperts
 * [GitHub issues](https://github.com/Devexperts/lin-check/issues)

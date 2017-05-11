@@ -218,7 +218,8 @@ class LockGraph {
             }
             if (from.order > rightmost.order) {
                 // All new edges could be added
-                // according to current topological order
+                // according to current topological order.
+                // This action should be done under the read-lock
                 for (LockNode to : lockStack) {
                     if (from.children.add(to)) {
                         stats.inc_edge_adds_new();

@@ -26,13 +26,9 @@ import com.devexperts.jagent.*;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.commons.SerialVersionUIDAdder;
 import org.objectweb.asm.util.CheckClassAdapter;
-import org.objectweb.asm.util.TraceClassVisitor;
 
-import java.io.PrintWriter;
 import java.lang.instrument.IllegalClassFormatException;
-import java.nio.file.Files;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,7 +37,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 class Transformer extends CachingClassFileTransformer {
-    private final Configuration configuration;
     private final ClassInfoCache ciCache;
     private final List<Pattern> includes;
     private final List<Pattern> excludes;
@@ -51,7 +46,6 @@ class Transformer extends CachingClassFileTransformer {
 
     Transformer(Configuration configuration, Log log, String agentVersion) {
         super(log, agentVersion);
-        this.configuration = configuration;
         this.ciCache = new ClassInfoCache(log);
         includes = new ArrayList<>(configuration.include().length);
         for (String s : configuration.include())

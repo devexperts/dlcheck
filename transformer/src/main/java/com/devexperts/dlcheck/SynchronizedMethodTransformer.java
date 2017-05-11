@@ -39,7 +39,6 @@ class SynchronizedMethodTransformer extends MethodTransformer {
 
     private final Label tryLabel = new Label();
     private final Label catchLabel = new Label();
-    private final Label endLabel = new Label();
 
     SynchronizedMethodTransformer(GeneratorAdapter mv,
         String className, String methodName, String fileName, int access, int classVersion)
