@@ -22,10 +22,14 @@
     <parent>
         <groupId>com.devexperts.dlcheck</groupId>
         <artifactId>dlcheck</artifactId>
-        <version>0.4</version>
+        <version>0.5</version>
     </parent>
 
     <artifactId>core</artifactId>
+
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
 
     <build>
         <!-- Processes resources directory to replace Maven's variables to theirs values -->

@@ -33,12 +33,19 @@ THE POSSIBILITY OF SUCH DAMAGE.
     <parent>
     <artifactId>dlcheck</artifactId>
     <groupId>com.devexperts.dlcheck</groupId>
-    <version>0.4</version>
+    <version>0.5</version>
   </parent>
 
     <artifactId>benchmarks</artifactId>
-    <version>0.4</version>
     <packaging>jar</packaging>
+
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <!-- JMH version to use with this project. -->
+        <jmh.version>1.16</jmh.version>
+        <!-- Name of the benchmark Uber-JAR to generate. -->
+        <uberjar.name>benchmarks</uberjar.name>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -53,13 +60,6 @@ THE POSSIBILITY OF SUCH DAMAGE.
             <scope>provided</scope>
         </dependency>
     </dependencies>
-
-    <properties>
-        <!-- JMH version to use with this project. -->
-        <jmh.version>1.16</jmh.version>
-        <!-- Name of the benchmark Uber-JAR to generate. -->
-        <uberjar.name>benchmarks</uberjar.name>
-    </properties>
 
     <build>
         <plugins>

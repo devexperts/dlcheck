@@ -22,7 +22,21 @@ package com.devexperts.dlcheck.api;
  * #L%
  */
 
+/**
+ * This listener handles Dl-Check events and could be set via
+ * {@link DlCheckUtils#addPotentialDeadlockListener(PotentialDeadlockListener)} method.
+ */
 public interface PotentialDeadlockListener {
-    void handle(PotentialDeadlock potentialDeadlock);
+    /**
+     * Invokes when a new potential deadlock is found
+     * @param potentialDeadlock found potential deadlock
+     */
+    default void onPotentialDeadlock(PotentialDeadlock potentialDeadlock) {};
+
+    /**
+     * Invokes when a stacktrace for an edges from an already found cycle is added
+     * @param cycleEdge updated cycle edge with stacktrace
+     */
+    default void onFoundStackTrace(CycleEdge cycleEdge) {};
 }
 

@@ -61,6 +61,6 @@ public class WeakIdentityHashMapTest {
         }
         // Check
         for (Object o : OBJECTS)
-            assertEquals(mapExpected.get(o), mapExpected.get(o));
+            assertEquals(mapExpected.get(o), mapActual.get(o));
     }
 }

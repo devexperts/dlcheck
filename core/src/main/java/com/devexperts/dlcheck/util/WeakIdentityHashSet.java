@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
 public class WeakIdentityHashSet<T> implements Iterable<T> {
-
     private static final int MAGIC = 0xB46394CD;
     private static final int MAX_SHIFT = 29;
     private static final int THRESHOLD = (int)((1L << 32) * 0.5); // 50% fill factor for speed
@@ -74,6 +73,26 @@ public class WeakIdentityHashSet<T> implements Iterable<T> {
             if (core.size >= (THRESHOLD >>> core.shift))
                 rehash();
         return res;
+    }
+
+    // needs external synchronization
+    public boolean remove(T o) {
+        int i = (System.identityHashCode(o) * MAGIC) >>> core.shift;
+        if (core.size == 0)
+            return false;
+        while(true) {
+            WeakReference<T> r = core.keys.get(i);
+            if (r == null)
+                return false;
+            if (r.get() == o) {
+                core.keys.set(i, EMPTY_KEY);
+                return true;
+            }
+            if (i == 0)
+                i = core.length;
+            i--;
+        }
+
     }
 
     private boolean addInternal(Core<T> core, T key) {

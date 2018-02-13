@@ -92,23 +92,25 @@ Here is an example of Dl-Check output. For each potential deadlock the associate
 !!! Potential deadlock !!!
 ==========================
 ### Cycle in lock graph: ###
-Lock Object@2acf57e3 was acquired at:
-	com/devexperts/dlcheck/tests/base/SynchronizedStatementTest.test(SynchronizedStatementTest.java:37)
-	com/devexperts/dlcheck/tests/base/SynchronizedStatementTest.test(SynchronizedStatementTest.java:40)
-Lock Object@2812cbfa was acquired at:
-	com/devexperts/dlcheck/tests/base/SynchronizedStatementTest.test(SynchronizedStatementTest.java:36)
-	com/devexperts/dlcheck/tests/base/SynchronizedStatementTest.test(SynchronizedStatementTest.java:41)
-### Current lock stack: ###
-Lock Object@2acf57e3 was acquired at:
-	com/devexperts/dlcheck/tests/base/SynchronizedStatementTest.test(SynchronizedStatementTest.java:37)
-	com/devexperts/dlcheck/tests/base/SynchronizedStatementTest.test(SynchronizedStatementTest.java:40)
-### Current stacktrace: ###
+Lock Object@7ce69770 was acquired at:
+	com.devexperts.dlcheck.tests.base.SynchronizedStatementTest.test(SynchronizedStatementTest.java:37)
+	com.devexperts.dlcheck.tests.base.SynchronizedStatementTest.test(SynchronizedStatementTest.java:40)
+Lock Object@7ce026d3 was acquired at:
+	com.devexperts.dlcheck.tests.base.SynchronizedStatementTest.test(SynchronizedStatementTest.java:36)
+	com.devexperts.dlcheck.tests.base.SynchronizedStatementTest.test(SynchronizedStatementTest.java:41)
+Edge 'Object@7ce026d3 -> Object@7ce69770' was added at:
 	com.devexperts.dlcheck.tests.base.SynchronizedStatementTest.test(SynchronizedStatementTest.java:41)
 	sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 	sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
 	sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
 	java.lang.reflect.Method.invoke(Method.java:498)
+	org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
 	...
+### Current lock stack: ###
+Lock Object@7ce69770 was acquired at:
+	com.devexperts.dlcheck.tests.base.SynchronizedStatementTest.test(SynchronizedStatementTest.java:37)
+	com.devexperts.dlcheck.tests.base.SynchronizedStatementTest.test(SynchronizedStatementTest.java:40)
 ```
 
 

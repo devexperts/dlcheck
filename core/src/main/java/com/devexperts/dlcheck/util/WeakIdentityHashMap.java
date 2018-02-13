@@ -24,13 +24,11 @@ package com.devexperts.dlcheck.util;
 
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
-import java.util.concurrent.atomic.AtomicIntegerArray;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
 
 public class WeakIdentityHashMap<K, V> {
-
     private static final int MAGIC = 0xB46394CD;
     private static final int INITIAL_SHIFT = 20;
     private static final int THRESHOLD = (int)((1L << 32) * 0.5); // 50% fill factor for speed
@@ -77,6 +75,16 @@ public class WeakIdentityHashMap<K, V> {
             if (core.size >= (THRESHOLD >>> core.shift))
                 rehash();
         return res;
+    }
+
+    // needs external synchronization
+    public V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
+        V val = get(key);
+        if (val == null) {
+            val = mappingFunction.apply(key);
+            put(key, val);
+        }
+        return val;
     }
 
     public synchronized void clean() {

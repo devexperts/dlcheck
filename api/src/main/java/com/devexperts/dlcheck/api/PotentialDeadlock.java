@@ -22,36 +22,25 @@ package com.devexperts.dlcheck.api;
  * #L%
  */
 
+import javax.xml.bind.annotation.*;
 import java.io.PrintStream;
-import java.util.Arrays;
 import java.util.List;
 
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement
 public class PotentialDeadlock {
     private final Cycle cycle;
-    private final List<StackTraceElement> acquireStackTrace;
     private final List<CycleNode> lockStack;
 
-    private PotentialDeadlock(Cycle cycle, List<StackTraceElement> acquireStackTrace, List<CycleNode> lockStack) {
+    // Stub for JAXB
+    private PotentialDeadlock() {
+        cycle = null;
+        lockStack = null;
+    }
+
+    public PotentialDeadlock(Cycle cycle, List<CycleNode> lockStack) {
         this.cycle = cycle;
-        this.acquireStackTrace = acquireStackTrace;
         this.lockStack = lockStack;
-    }
-
-    public static PotentialDeadlock create(Cycle cycle, List<CycleNode> lockStack) {
-        List<StackTraceElement> acquireStackTrace = Arrays.asList(filterStacktrace(new Exception().getStackTrace()));
-        return new PotentialDeadlock(cycle, acquireStackTrace, lockStack);
-    }
-
-    /**
-     * Removes dl-check's part of stack trace.
-     */
-    private static StackTraceElement[] filterStacktrace(StackTraceElement[] stackTrace) {
-        int lastIndexWithDlCheck = -1;
-        for (int i = 0; i < stackTrace.length; i++) {
-            if (stackTrace[i].getClassName().startsWith("com.devexperts.dlcheck.") && !stackTrace[i].getClassName().startsWith("com.devexperts.dlcheck.tests."))
-                lastIndexWithDlCheck = i;
-        }
-        return Arrays.copyOfRange(stackTrace, lastIndexWithDlCheck + 1, stackTrace.length);
     }
 
     public Cycle getCycle() {
@@ -62,10 +51,6 @@ public class PotentialDeadlock {
         return lockStack;
     }
 
-    public List<StackTraceElement> getAcquireStackTrace() {
-        return acquireStackTrace;
-    }
-
     public void print(PrintStream out) {
         PrintUtils.printAsBigHeader(out, "!!! Potential deadlock !!!");
         PrintUtils.printAsSmallHeader(out, "Cycle in lock graph:");
@@ -73,8 +58,6 @@ public class PotentialDeadlock {
         PrintUtils.printAsSmallHeader(out, "Current lock stack:");
         for (CycleNode node : lockStack)
             node.print(out);
-        PrintUtils.printAsSmallHeader(out, "Current stacktrace:");
-        PrintUtils.printStacktrace(out, acquireStackTrace);
     }
 
     @Override

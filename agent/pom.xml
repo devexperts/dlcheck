@@ -22,14 +22,10 @@
 	<parent>
 		<groupId>com.devexperts.dlcheck</groupId>
 		<artifactId>dlcheck</artifactId>
-		<version>0.4</version>
+		<version>0.5</version>
 	</parent>
 
 	<artifactId>agent</artifactId>
-
-	<properties>
-		<maven.deploy.skip>false</maven.deploy.skip>
-	</properties>
 
 	<build>
 		<!-- DO NOT RENAME because of "Boot-Class-Path" section in MANIFEST.MF -->

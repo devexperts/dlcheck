@@ -22,31 +22,19 @@ package com.devexperts.dlcheck;
  * #L%
  */
 
-import com.devexperts.dlcheck.api.Cycle;
-import com.devexperts.dlcheck.api.CycleNode;
-import com.devexperts.dlcheck.api.DlCheckUtils;
-import com.devexperts.dlcheck.api.PotentialDeadlock;
+import com.devexperts.dlcheck.api.*;
 import com.devexperts.dlcheck.util.ConcurrentWeakIdentityHashMap;
 import com.devexperts.dlcheck.util.FastArrayStack;
 import com.devexperts.dlcheck.util.FastIdentityHashSet;
 import com.devexperts.dlcheck.util.FastObjArrayList;
 import com.devexperts.dlcheck.util.LockNodeStack;
+import com.devexperts.dlcheck.util.WeakIdentityHashMap;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -55,20 +43,17 @@ import java.util.stream.Collectors;
 class LockGraph {
     private static final int MAX_GC_COLLECTED_LOCK_NODES = 1000;
     private static final int MAX_BUFFER_SIZE = 1024;
-    private static final Set<List<LockNode>> FOUND_CYCLES = new HashSet<>();
-    private static final Set<PotentialDeadlock> FOUND_DEADLOCKS = new HashSet<>();
+
+    private final Set<List<LockNode>> FOUND_CYCLES = new HashSet<>();
+    private final Set<PotentialDeadlock> FOUND_DEADLOCKS = new HashSet<>();
+    private final WeakIdentityHashMap<LockNode, CycleNode> CYCLE_NODES = new WeakIdentityHashMap<>();
 
     private final ConcurrentWeakIdentityHashMap<Object, LockNode> nodes = new ConcurrentWeakIdentityHashMap<>(1_000, 0.5f);
 
     private final Stats stats;
 
     private final ReadWriteLock graphLock = new ReentrantReadWriteLock();
-    private final ThreadLocal<FastObjArrayList<LockNode>> newEdgesHolder = new ThreadLocal<FastObjArrayList<LockNode>>() {
-        @Override
-        protected FastObjArrayList<LockNode> initialValue() {
-            return new FastObjArrayList<>();
-        }
-    };
+    private final ThreadLocal<FastObjArrayList<LockNode>> newEdgesHolder = ThreadLocal.withInitial(FastObjArrayList::new);
 
     private final FastObjArrayList<WeakReference<LockNode>> ordInv = new FastObjArrayList<>();
     private final FastArrayStack<LockNode> stack = new FastArrayStack<>();
@@ -138,7 +123,6 @@ class LockGraph {
         }
     }
 
-
     // guarded by "lockGraph.writeLock()"
     private void compressOrdInv() {
         int i = 0;
@@ -171,7 +155,7 @@ class LockGraph {
     }
 
     void addEdges(LockNode from, LockNodeStack lockStack) {
-                    stats.inc_lock_stack_size_usage(lockStack.size());
+        stats.inc_lock_stack_size_usage(lockStack.size());
         // Check that lockStack size is not empty
         if (lockStack.size() == 0)
             return;
@@ -187,7 +171,15 @@ class LockGraph {
         boolean flushedAndCompressed = false;
         // Detect new edges
         FastObjArrayList<LockNode> newEdges = newEdgesHolder.get();
+
         for (LockNode to : lockStack) {
+            // Set stacktrace for edges which were previously found to be on cycle
+            // And do it for this edge only once
+            CycleEdge cycleEdge = from.edgesFromPublishedCycles.get(to);
+            if (cycleEdge != null && cycleEdge.getStackTrace() == null) {
+                cycleEdge.setStackTrace(new Exception().getStackTrace());
+                DlCheckUtils.notifyAboutNewStackTrace(cycleEdge);
+            }
             // Flush buffer with lock nodes if order of edge end doesn't defined already
             if (to.order == LockNode.INITIAL_ORDER) {
                 graphLock.writeLock().lock();
@@ -236,7 +228,7 @@ class LockGraph {
         }
         // Need to maintain topological order
         // Maintain statistics
-        long startTime_maintainTopologicalOrder =  0;
+        long startTime_maintainTopologicalOrder = 0;
         if (Stats.STATS_ENABLED) {
             startTime_maintainTopologicalOrder = System.nanoTime();
             stats.inc_maintains_top_order();
@@ -259,7 +251,7 @@ class LockGraph {
     }
 
     private List<List<LockNode>> maintainTopologicalOrderAndGetCycle(LockNode from,
-        FastObjArrayList<LockNode> newEdges, boolean flushedAndCompressed)
+                                                                     FastObjArrayList<LockNode> newEdges, boolean flushedAndCompressed)
     {
         // Find lock node with rightmost order
         // under writeLock.
@@ -371,6 +363,7 @@ class LockGraph {
     }
 
     private long visitedCounter;
+
     private void newVisited() {
         visitedCounter++;
     }
@@ -388,9 +381,9 @@ class LockGraph {
             if (cyclePath.size() != c.size())
                 continue;
             boolean flag = true;
-            for (Iterator<LockNode> newIt = cyclePath.iterator(), oldIt = c.iterator(); newIt.hasNext() && oldIt.hasNext(); ) {
-                LockNode newNode = newIt.next();
-                LockNode oldNode = oldIt.next();
+            for (int i = 0; i < c.size(); i++) {
+                LockNode newNode = cyclePath.get(i);
+                LockNode oldNode = c.get(i);
                 if (!newNode.acquireLocationIds.containsAll(oldNode.acquireLocationIds)) {
                     flag = false;
                     break;
@@ -401,17 +394,45 @@ class LockGraph {
         }
         FOUND_CYCLES.add(cyclePath);
         stats.inc_cycles_unique();
-        Cycle cycle = new Cycle(cyclePath.stream().map(
-                lockNode -> new CycleNode(lockNode.desc, getLocations(lockNode.acquireLocationIds))
-        ).collect(Collectors.toList()));
+        // Create cycle
+        List<CycleEdge> cycleEdges = new ArrayList<>();
+        for (int cur = 0; cur < cyclePath.size(); cur++) {
+            LockNode curNode = cyclePath.get(cur);
+            LockNode nextNode = cyclePath.get((cur + 1) % cyclePath.size());
+            CycleEdge edge = curNode.edgesFromPublishedCycles.get(nextNode);
+            if (edge == null) {
+                // Do not add cycle edge to the map here,
+                // because it could be not added if potential deadlock is not published
+                edge = new CycleEdge(getCycleNode(curNode), getCycleNode(nextNode));
+            }
+            cycleEdges.add(edge);
+        }
+        Cycle cycle = new Cycle(cycleEdges);
+        // Construct lock stack
         List<CycleNode> lockStackElements = Arrays.stream(lockStack.cloneAsArray()).map(
                 lockNode -> new CycleNode(lockNode.desc, getLocations(lockNode.acquireLocationIds))
         ).collect(Collectors.toList());
-        PotentialDeadlock pd = PotentialDeadlock.create(cycle, lockStackElements);
+        // Try to publish potential deadlock
+        PotentialDeadlock pd = new PotentialDeadlock(cycle, lockStackElements);
         if (FOUND_DEADLOCKS.add(pd)) {
+            // Set stacktrace for the last edge.
+            // It could not be set before because the last edge is the currently processing one.
+            cycleEdges.get(cycleEdges.size() - 1).setStackTrace(new Exception().getStackTrace());
+            // Add new cycle edges to edgesFromPublishedCycles in order to find stacktrace later
+            for (int cur = 0; cur < cyclePath.size() -1; cur++) {
+                LockNode curNode = cyclePath.get(cur);
+                LockNode nextNode = cyclePath.get(cur + 1);
+                int finalCur = cur; // for lambda
+                curNode.edgesFromPublishedCycles.computeIfAbsent(nextNode, (__) -> cycleEdges.get(finalCur));
+            }
             stats.inc_potential_deadlocks();
             DlCheckUtils.notifyAboutPotentialDeadlock(pd);
         }
+    }
+
+    private CycleNode getCycleNode(LockNode lockNode) {
+        return CYCLE_NODES.computeIfAbsent(lockNode, (__) ->
+            new CycleNode(lockNode.desc, getLocations(lockNode.acquireLocationIds)));
     }
 
     private Set<StackTraceElement> getLocations(Iterable<Integer> set) {

@@ -5,10 +5,14 @@
     <parent>
         <artifactId>dlcheck</artifactId>
         <groupId>com.devexperts.dlcheck</groupId>
-        <version>0.4</version>
+        <version>0.5</version>
     </parent>
 
     <artifactId>test</artifactId>
+
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
 
     <build>
         <plugins>
@@ -43,6 +47,7 @@
                     <argLine>-javaagent:${project.build.directory}/${agent.artifact.name}.jar
                         -Ddlcheck.log.level=DEBUG
                         -Ddlcheck.dump.dir=target/dlcheck_dump
+                        -Ddlcheck.xml.file=target/potential_deadlocks.xml
                     </argLine>
                 </configuration>
             </plugin>

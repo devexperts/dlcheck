@@ -46,18 +46,22 @@ public class WeakIdentityHashSetTest {
     public void testFunctionality() {
         WeakIdentityHashSet<Object> setActual = new WeakIdentityHashSet<>();
         Set<Object> setExpected = Collections.newSetFromMap(new WeakHashMap<>());
-        // Add elements
+        // Add elements or remove them
         for (int i = 0; i < N * 1000; i++) {
             Object o;
-            if (RANDOM.nextInt(10) >= 8) {
+            int nextInt = RANDOM.nextInt(10);
+            if (nextInt >= 8) {
                 // Add element from OBJECTS
                 o = OBJECTS[RANDOM.nextInt(N)];
                 assertEquals(setExpected.add(o), setActual.add(o));
-            } else {
+            } else if(nextInt >= 3){
                 // Add new element
                 o = new Object();
                 setExpected.add(o);
                 setActual.add(o);
+            } else {
+                o = OBJECTS[RANDOM.nextInt(N)];
+                assertEquals(setExpected.remove(o), setActual.remove(o));
             }
         }
         // Check

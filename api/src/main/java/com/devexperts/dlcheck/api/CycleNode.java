@@ -22,19 +22,34 @@ package com.devexperts.dlcheck.api;
  * #L%
  */
 
+import com.devexperts.dlcheck.api.xml.StackTraceElementAdapter;
+
+import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.Set;
 
+@XmlAccessorType(XmlAccessType.NONE)
 public class CycleNode {
     private final String desc;
-    private final Set<StackTraceElement> acquiringLocations;
+    @XmlElementWrapper
+    @XmlElement(name = "at")
+    @XmlJavaTypeAdapter(StackTraceElementAdapter.class)
+    private final StackTraceElement[] acquiringLocations;
+
+    // JAXB stub
+    private CycleNode() {
+        acquiringLocations = null;
+        desc = null;
+    }
 
     public CycleNode(String desc, Set<StackTraceElement> acquiringLocations) {
         this.desc = desc;
-        this.acquiringLocations = acquiringLocations;
+        this.acquiringLocations = acquiringLocations.toArray(new StackTraceElement[0]);
     }
 
-    public Set<StackTraceElement> getAcquiringLocations() {
+    public StackTraceElement[] getAcquiringLocations() {
         return acquiringLocations;
     }
 
@@ -54,11 +69,11 @@ public class CycleNode {
 
         CycleNode node = (CycleNode) o;
 
-        return acquiringLocations != null ? acquiringLocations.equals(node.acquiringLocations) : node.acquiringLocations == null;
+        return Arrays.equals(acquiringLocations, node.acquiringLocations);
     }
 
     @Override
     public int hashCode() {
-        return acquiringLocations != null ? acquiringLocations.hashCode() : 0;
+        return Arrays.hashCode(acquiringLocations);
     }
 }

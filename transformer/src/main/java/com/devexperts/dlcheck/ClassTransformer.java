@@ -108,7 +108,6 @@ public class ClassTransformer extends ClassVisitor {
             className, methodName, fileName, access, classVersion);
         mv = new LockTransformer(new GeneratorAdapter(mv, access, methodName, desc),
             lockPredicates, tryLockPredicates, unlockPredicates, className, methodName, fileName);
-        // mv = new LocalVariablesSorter(access, desc, mv);
         mv = new TryCatchBlockSorter(mv, access, methodName, desc, signature, exceptions);
         return mv;
     }

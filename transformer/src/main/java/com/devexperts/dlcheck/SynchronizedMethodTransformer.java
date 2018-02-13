@@ -57,9 +57,11 @@ class SynchronizedMethodTransformer extends MethodTransformer {
     public void visitCode() {
         super.visitCode();
         if (isSynchronized) {
+            TrasformationUtils.wrapCodeToMakeItSafe(mv, () -> {
+                loadSynchronizedMethodMonitorOwner();
+                invokeAfterMonitorEnter();
+            });
             mv.visitLabel(tryLabel);
-            loadSynchronizedMethodMonitorOwner();
-            invokeAfterMonitorEnter();
         }
     }
 
@@ -89,10 +91,10 @@ class SynchronizedMethodTransformer extends MethodTransformer {
         case LRETURN:
         case RETURN:
             if (isSynchronized) {
-                //TrasformationUtils.wrapCodeToMakeItSafe(mv, () -> {
+                TrasformationUtils.wrapCodeToMakeItSafe(mv, () -> {
                     loadSynchronizedMethodMonitorOwner();
                     invokeAfterMonitorExit();
-                //});
+                });
             }
             mv.visitInsn(opcode);
             break;

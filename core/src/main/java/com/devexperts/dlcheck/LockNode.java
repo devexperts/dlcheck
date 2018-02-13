@@ -23,8 +23,10 @@ package com.devexperts.dlcheck;
  */
 
 
+import com.devexperts.dlcheck.api.CycleEdge;
 import com.devexperts.dlcheck.util.FastIdentityHashSet;
 import com.devexperts.dlcheck.util.IntSet;
+import com.devexperts.dlcheck.util.WeakIdentityHashMap;
 import com.devexperts.dlcheck.util.WeakIdentityHashSet;
 
 public class LockNode {
@@ -32,10 +34,11 @@ public class LockNode {
 
     final FastIdentityHashSet<LockNode> children = new FastIdentityHashSet<>();
     final IntSet acquireLocationIds = new IntSet();
-
     final String desc;
     // Already known edges which create a cycle
     final WeakIdentityHashSet<LockNode> cyclicEdges = new WeakIdentityHashSet<>();
+    // Edges from cycles with associated stacktrace
+    final WeakIdentityHashMap<LockNode, CycleEdge> edgesFromPublishedCycles = new WeakIdentityHashMap<>();
 
     volatile int order;
     long visited;

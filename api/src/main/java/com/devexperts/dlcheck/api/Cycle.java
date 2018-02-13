@@ -22,24 +22,47 @@ package com.devexperts.dlcheck.api;
  * #L%
  */
 
+import com.devexperts.dlcheck.api.xml.CycleEdgeAdapter;
+
+import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+@XmlAccessorType(XmlAccessType.NONE)
 public class Cycle {
+    @XmlElementWrapper(name = "edges")
+    @XmlElement(name = "edge")
+    @XmlJavaTypeAdapter(CycleEdgeAdapter.class)
+    private final List<CycleEdge> edges;
 
-    private final List<CycleNode> cycle;
+    // JAXB stub
+    private Cycle() {
+        edges = null;
+    }
 
-    public Cycle(List<CycleNode> cycle) {
-        this.cycle = cycle;
+    public Cycle(List<CycleEdge> edges) {
+        this.edges = edges;
     }
 
     public void print(PrintStream out) {
-        for (CycleNode cn : cycle)
-            cn.print(out);
+        for (CycleEdge edge : edges) {
+            edge.getFromNode().print(out);
+            edge.print(out);
+        }
     }
 
+    public List<CycleEdge> getEdges() {
+        return edges;
+    }
+
+    /**
+     * @deprecated use {@link #getEdges()} instead.
+     */
     public List<CycleNode> getNodes() {
-        return cycle;
+        return edges.stream().map(CycleEdge::getFromNode).collect(Collectors.toList());
     }
 
     @Override
@@ -47,14 +70,13 @@ public class Cycle {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Cycle cycle1 = (Cycle) o;
+        Cycle cycle = (Cycle) o;
 
-        return cycle != null ? cycle.equals(cycle1.cycle) : cycle1.cycle == null;
-
+        return edges != null ? edges.equals(cycle.edges) : cycle.edges == null;
     }
 
     @Override
     public int hashCode() {
-        return cycle != null ? cycle.hashCode() : 0;
+        return edges != null ? edges.hashCode() : 0;
     }
 }

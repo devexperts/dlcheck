@@ -39,13 +39,6 @@ public class Test implements Runnable {
         ASMifier.main(new String[]{Test.class.getCanonicalName()});
     }
 
-    public void f() {
-        try {
-            Integer.parseInt("bb");
-        } catch (Throwable e){
-        }
-    }
-
     @Override
     public void run() {
         System.out.println(0);

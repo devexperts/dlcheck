@@ -22,16 +22,26 @@ package com.devexperts.dlcheck.tests.base;
  * #L%
  */
 
+import com.devexperts.dlcheck.api.CycleEdge;
 import com.devexperts.dlcheck.api.DlCheckUtils;
+import com.devexperts.dlcheck.api.PotentialDeadlock;
 import com.devexperts.dlcheck.api.PotentialDeadlockListener;
 import org.junit.After;
 import org.junit.Before;
 
 public class LockTestBase {
-
     protected int potentialDeadlocksCount;
-    private final PotentialDeadlockListener PDL = potentialDeadlock -> {
-        potentialDeadlocksCount++;
+    protected int newEdgeStackTracesCount;
+    private final PotentialDeadlockListener PDL = new PotentialDeadlockListener() {
+        @Override
+        public void onPotentialDeadlock(PotentialDeadlock potentialDeadlock) {
+            potentialDeadlocksCount++;
+        }
+
+        @Override
+        public void onFoundStackTrace(CycleEdge cycleEdge) {
+            newEdgeStackTracesCount++;
+        }
     };
 
     @Before

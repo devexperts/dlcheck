@@ -30,7 +30,7 @@ class PrintUtils {
     private PrintUtils() {
     }
 
-    static void printStacktrace(PrintStream out, Iterable<StackTraceElement> stackTrace) {
+    static void printStacktrace(PrintStream out, StackTraceElement[] stackTrace) {
         for (StackTraceElement se : stackTrace) {
             out.print('\t');
             out.println(se);

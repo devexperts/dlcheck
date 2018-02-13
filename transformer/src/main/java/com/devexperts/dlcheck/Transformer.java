@@ -26,6 +26,7 @@ import com.devexperts.jagent.*;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.commons.SerialVersionUIDAdder;
 import org.objectweb.asm.util.CheckClassAdapter;
 
 import java.lang.instrument.IllegalClassFormatException;
@@ -113,7 +114,7 @@ class Transformer extends CachingClassFileTransformer {
             ciCache.getOrInitClassInfoMap(loader).put(className, cInfo);
             ClassWriter cw = new FrameClassWriter(loader, ciCache, cInfo.getVersion());
             ClassVisitor cv = new ClassTransformer(
-                    /*ciVisitor.implementLockNodeHolder() ? new SerialVersionUIDAdder(cw) :*/ cw,
+                    ciVisitor.implementLockNodeHolder() ? new SerialVersionUIDAdder(cw) : cw,
                     cInfo.getSourceFile(), lockPredicates, tryLockPredicates, unlockPredicates, false
             );
             cv  = new CheckClassAdapter(cv); // TODO debug

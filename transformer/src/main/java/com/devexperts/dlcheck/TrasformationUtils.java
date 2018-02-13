@@ -44,17 +44,12 @@ class TrasformationUtils {
     static final Method AFTER_MONITOR_ENTER = new Method("afterMonitorEnter", Type.VOID_TYPE, new Type[]{OBJECT_TYPE, Type.INT_TYPE});
     static final Method AFTER_MONITOR_EXIT = new Method("afterMonitorExit", Type.VOID_TYPE, new Type[]{OBJECT_TYPE});
     static final Method CLASS_FOR_NAME = new Method("forName", CLASS_TYPE, new Type[]{STRING_TYPE});
-    static final Method EXCEPTION_PRINT_STACKTRACE = new Method("printStackTrace", Type.VOID_TYPE, new Type[]{});
 
     static final String  LOCK_NODE_DESC = Type.getType(LockNode.class).getDescriptor();
     static final String GET_LOCK_NODE_METHOD_NAME = "__dlcheck_get_lock_node__";
     static final String SET_LOCK_NODE_METHOD_NAME = "__dlcheck_set_lock_node__";
     static final String LOCK_NODE_FIELD_NAME = "__com_devexperts_dlcheck_lock_node__";
     static final String LOCK_NODE_HOLDER_INT_NAME = Type.getType(LockNodeHolder.class).getInternalName();
-
-    static final String SERIALIZABLE_INT_NAME = Type.getType(Serializable.class).getInternalName();
-    static final String EXTERNALIZABLE_INT_NAME = Type.getType(Externalizable.class).getInternalName();
-    static final String SERIAL_VERSION_UID_FIELD_NAME = "serialVersionUID";
 
     /**
      * Wrap the generated code in safe try-catch block.
@@ -71,11 +66,6 @@ class TrasformationUtils {
      * </pre>
      */
     public static void wrapCodeToMakeItSafe(GeneratorAdapter mv, Runnable generatedCode) {
-        if (true) {
-            // TODO fix it
-            generatedCode.run();
-            return;
-        }
        // Create labels and configure try-catch blocks
        Label tryLabel = mv.newLabel();
        Label catchLabel = mv.newLabel();

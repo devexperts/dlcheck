@@ -24,6 +24,7 @@ package com.devexperts.dlcheck.tests.base;
 
 import com.devexperts.dlcheck.api.CycleNode;
 import com.devexperts.dlcheck.api.DlCheckUtils;
+import com.devexperts.dlcheck.api.PotentialDeadlock;
 import com.devexperts.dlcheck.api.PotentialDeadlockListener;
 import org.junit.After;
 import org.junit.Assert;
@@ -42,12 +43,15 @@ import static java.util.Arrays.asList;
 public class GraphAnalyzerTest {
     private Lock[] locks = new Lock[100];
     private Set<List<String>> expectedCyclesDesc;
-    private final PotentialDeadlockListener pdl = potentialDeadlock -> {
-        List<String> cycleDesc = potentialDeadlock.getCycle().getNodes().stream()
+    private final PotentialDeadlockListener pdl = new PotentialDeadlockListener() {
+        @Override
+        public void onPotentialDeadlock(PotentialDeadlock potentialDeadlock) {
+            List<String> cycleDesc = potentialDeadlock.getCycle().getNodes().stream()
                 .map(CycleNode::getDesc)
                 .map(desc -> desc.split("@")[1])
                 .collect(Collectors.toList());
-        Assert.assertTrue(expectedCyclesDesc.remove(cycleDesc));
+            Assert.assertTrue(expectedCyclesDesc.remove(cycleDesc));
+        }
     };
 
     public GraphAnalyzerTest() {

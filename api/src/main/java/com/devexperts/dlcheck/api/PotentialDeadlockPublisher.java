@@ -57,4 +57,10 @@ public class PotentialDeadlockPublisher {
         potentialDeadlock.print(out);
         out.flush();
     }
+
+    static synchronized void publishEdgeStackTrace(CycleEdge edge) {
+        PrintUtils.printAsBigHeader(out, "Edge for already found cycle");
+        edge.print(out);
+        out.flush();
+    }
 }
