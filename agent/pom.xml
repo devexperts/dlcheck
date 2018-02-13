@@ -22,7 +22,7 @@
 	<parent>
 		<groupId>com.devexperts.dlcheck</groupId>
 		<artifactId>dlcheck</artifactId>
-		<version>0.5</version>
+		<version>0.5.1</version>
 	</parent>
 
 	<artifactId>agent</artifactId>
@@ -82,11 +82,13 @@
 			<groupId>com.devexperts.dlcheck</groupId>
 			<artifactId>core</artifactId>
 			<version>${project.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.devexperts.dlcheck</groupId>
 			<artifactId>transformer</artifactId>
 			<version>${project.version}</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 </project>

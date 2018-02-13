@@ -22,14 +22,10 @@
 	<parent>
 		<groupId>com.devexperts.dlcheck</groupId>
 		<artifactId>dlcheck</artifactId>
-		<version>0.5</version>
+		<version>0.5.1</version>
 	</parent>
 
 	<artifactId>transformer</artifactId>
-
-	<properties>
-		<maven.deploy.skip>true</maven.deploy.skip>
-	</properties>
 
 	<dependencies>
 		<dependency>
