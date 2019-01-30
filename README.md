@@ -1,7 +1,6 @@
 Dl-Check 
 ========
 
-[ ![Download](https://api.bintray.com/packages/devexperts/Maven/dl-check/images/download.svg) ](https://bintray.com/devexperts/Maven/dl-check/_latestVersion)
 
 **Dl-Check** is a dynamic tool for finding potential deadlocks in multithreaded programs. It constructs the lock-order graph (similar to wait-for graph, but all added edges not being removed, so it reflect lock acquisitions history) and finds cycles in it. **Dl-Check** uses various tecniques to get it fast and scalable and to avoid superfluous signals about potential deadlocks.
 
