@@ -1,11 +1,10 @@
-Dl-Check 
-========
+# Dl-Check
 
 [ ![Download](https://api.bintray.com/packages/devexperts/Maven/dl-check/images/download.svg) ](https://bintray.com/devexperts/Maven/dl-check/_latestVersion)
 
 **Dl-Check** is a dynamic tool for finding potential deadlocks in multithreaded programs. It constructs the lock-order graph (similar to wait-for graph, but all added edges not being removed, so it reflect lock acquisitions history) and finds cycles in it. **Dl-Check** uses various tecniques to get it fast and scalable and to avoid superfluous signals about potential deadlocks.
 
-See this paper for details: [link will be here as soon as possible].
+See this paper for details: [Dl-Check: Dynamic Potential Deadlock Detection Tool for Java Programs](https://link.springer.com/chapter/10.1007/978-3-319-71734-0_6)
 
 # How To
 **Dl-Check** is implemented as Java agent, so you should add ```-javaagent:dlcheck.jar``` option to analyze your application. To download the agent artifact use our Bintray repository: https://bintray.com/devexperts/Maven/dl-check. 
@@ -118,7 +117,7 @@ Lock Object@7ce69770 was acquired at:
 If you need help, you have a question, or you need further details on how to use **Dl-Check**, you can refer to the following resources:
 
 * [dxLab](https://code.devexperts.com/) research group at Devexperts
-* [GitHub issues](https://github.com/Devexperts/lin-check/issues)
+* [GitHub issues](https://github.com/Devexperts/dlcheck/issues)
 
 You can use the following e-mail to contact us directly:
 
