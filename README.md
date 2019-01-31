@@ -122,4 +122,5 @@ If you need help, you have a question, or you need further details on how to use
 
 You can use the following e-mail to contact us directly:
 
+![dxlab mail](dxlab-mail.png)
 
